@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TODO</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 2rem 1rem;
+      background: #f2f4f7;
+      color: #1f2933;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+    }
+
+    main {
+      max-width: 32rem;
+      margin: 0 auto;
+      padding: 1.5rem;
+      background: #ffffff;
+      border: 1px solid #d9e2ec;
+      border-radius: 8px;
+    }
+
+    h1 {
+      margin: 0 0 1rem;
+      font-size: 1.25rem;
+    }
+
+    form {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    #todo-input {
+      flex: 1;
+      min-width: 0;
+      padding: 0.5rem 0.75rem;
+      font: inherit;
+      color: inherit;
+      background: #ffffff;
+      border: 1px solid #bcccdc;
+      border-radius: 6px;
+    }
+
+    #todo-input:focus {
+      outline: 2px solid #2563eb;
+      outline-offset: 1px;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      font: inherit;
+      color: #ffffff;
+      background: #2563eb;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    #todo-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    #todo-list > li {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #d9e2ec;
+      border-radius: 6px;
+    }
+
+    #todo-list > li input[type="checkbox"] {
+      flex: none;
+      width: 1rem;
+      height: 1rem;
+      margin: 0;
+    }
+
+    #todo-list > li.completed {
+      color: #7b8794;
+    }
+
+    #todo-list > li.completed .todo-text,
+    #todo-list > li.completed span {
+      text-decoration: line-through;
+    }
+
+    .todo-text {
+      flex: 1;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    #todo-list > li button {
+      flex: none;
+      padding: 0.25rem 0.6rem;
+      font: inherit;
+      color: #b42318;
+      background: transparent;
+      border: 1px solid #d9e2ec;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #todo-list > li button:hover {
+      background: #fdecea;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>TODO</h1>
+    <form>
+      <input id="todo-input" type="text" placeholder="What needs to be done?" autocomplete="off" required>
+      <button type="submit">Add</button>
+    </form>
+    <ul id="todo-list"></ul>
+  </main>
+  <script>
+    // Data layer: todos are loaded from and saved to localStorage under KEY.
+    const KEY = 'todos';
+    let todos = [];
+    let idCounter = 0;
+
+    function newId() {
+      return String(Date.now()) + '-' + (++idCounter);
+    }
+
+    function load() {
+      try {
+        const raw = localStorage.getItem(KEY);
+        if (raw === null) {
+          return [];
+        }
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function save(todos) {
+      localStorage.setItem(KEY, JSON.stringify(todos));
+    }
+
+    function render() {
+      const list = document.getElementById('todo-list');
+      list.replaceChildren();
+
+      todos.forEach((todo) => {
+        const item = document.createElement('li');
+        item.dataset.id = todo.id;
+        if (todo.done) {
+          item.classList.add('completed');
+        }
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = Boolean(todo.done);
+        checkbox.dataset.id = todo.id;
+        checkbox.setAttribute('aria-label', 'Toggle todo: ' + todo.text);
+
+        const text = document.createElement('span');
+        text.className = 'todo-text';
+        text.textContent = String(todo.text);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'delete';
+        deleteButton.textContent = 'Delete';
+        deleteButton.dataset.id = todo.id;
+
+        item.append(checkbox, text, deleteButton);
+        list.append(item);
+      });
+    }
+
+    // Event wiring: handlers stay on the form and the list container so that
+    // re-rendering the list does not drop them.
+    const form = document.querySelector('form');
+    const input = document.getElementById('todo-input');
+    const todoList = document.getElementById('todo-list');
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const text = input.value.trim();
+      if (!text) {
+        return;
+      }
+      todos.push({ id: newId(), text: text, done: false });
+      save(todos);
+      render();
+      input.value = '';
+      input.focus();
+    });
+
+    todoList.addEventListener('change', (event) => {
+      const checkbox = event.target.closest('input[type="checkbox"]');
+      if (!checkbox) {
+        return;
+      }
+      const todo = todos.find((item) => String(item.id) === checkbox.dataset.id);
+      if (!todo) {
+        return;
+      }
+      todo.done = checkbox.checked;
+      save(todos);
+      render();
+    });
+
+    todoList.addEventListener('click', (event) => {
+      const button = event.target.closest('button.delete');
+      if (!button) {
+        return;
+      }
+      const index = todos.findIndex((item) => String(item.id) === button.dataset.id);
+      if (index === -1) {
+        return;
+      }
+      todos.splice(index, 1);
+      save(todos);
+      render();
+    });
+
+    todos = load();
+    render();
+  </script>
+</body>
+</html>
