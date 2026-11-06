@@ -192,6 +192,53 @@
       });
     }
 
+    // Event wiring: handlers stay on the form and the list container so that
+    // re-rendering the list does not drop them.
+    const form = document.querySelector('form');
+    const input = document.getElementById('todo-input');
+    const todoList = document.getElementById('todo-list');
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const text = input.value.trim();
+      if (!text) {
+        return;
+      }
+      todos.push({ id: newId(), text: text, done: false });
+      save(todos);
+      render();
+      input.value = '';
+      input.focus();
+    });
+
+    todoList.addEventListener('change', (event) => {
+      const checkbox = event.target.closest('input[type="checkbox"]');
+      if (!checkbox) {
+        return;
+      }
+      const todo = todos.find((item) => String(item.id) === checkbox.dataset.id);
+      if (!todo) {
+        return;
+      }
+      todo.done = checkbox.checked;
+      save(todos);
+      render();
+    });
+
+    todoList.addEventListener('click', (event) => {
+      const button = event.target.closest('button.delete');
+      if (!button) {
+        return;
+      }
+      const index = todos.findIndex((item) => String(item.id) === button.dataset.id);
+      if (index === -1) {
+        return;
+      }
+      todos.splice(index, 1);
+      save(todos);
+      render();
+    });
+
     todos = load();
     render();
   </script>
