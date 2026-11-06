@@ -1,0 +1,150 @@
+:root {
+  color-scheme: light;
+  --page-bg: #eef1f6;
+  --card-border: #d9e2ec;
+  --display-bg: #18202c;
+  --display-fg: #f8fafc;
+  --key-bg: #e9edf3;
+  --key-bg-hover: #dfe5ee;
+  --key-bg-active: #d3dbe6;
+  --key-fg: #1f2933;
+  --operator-bg: #dde8f8;
+  --operator-bg-hover: #d2e1f7;
+  --operator-bg-active: #c5d7f2;
+  --operator-fg: #1d4ed8;
+  --function-bg: #f7e3e3;
+  --function-bg-hover: #f2d5d5;
+  --function-bg-active: #eed0d0;
+  --function-fg: #b42318;
+  --equals-bg: #2563eb;
+  --equals-bg-hover: #1d4ed8;
+  --equals-bg-active: #1e40af;
+  --radius: 0.875rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 1.5rem 1rem;
+  background: var(--page-bg);
+  color: var(--key-fg);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+.calculator {
+  width: min(100%, 22rem);
+  padding: 1rem;
+  background: #ffffff;
+  border: 1px solid var(--card-border);
+  border-radius: 1.25rem;
+  box-shadow: 0 18px 40px -20px rgba(15, 23, 42, 0.35);
+}
+
+.display {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 4.5rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  overflow: hidden;
+  background: var(--display-bg);
+  color: var(--display-fg);
+  border-radius: var(--radius);
+  font-size: clamp(1.75rem, 9vw, 2.5rem);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.keys {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.key {
+  min-width: 0;
+  min-height: 3.5rem;
+  padding: 0.75rem 0.25rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--key-bg);
+  color: var(--key-fg);
+  font: inherit;
+  font-size: clamp(1.1rem, 4.8vw, 1.35rem);
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.key:hover {
+  background: var(--key-bg-hover);
+}
+
+.key:active {
+  background: var(--key-bg-active);
+  transform: scale(0.97);
+}
+
+.key:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.key--function {
+  background: var(--function-bg);
+  color: var(--function-fg);
+}
+
+.key--function:hover {
+  background: var(--function-bg-hover);
+}
+
+.key--function:active {
+  background: var(--function-bg-active);
+}
+
+.key--operator {
+  background: var(--operator-bg);
+  color: var(--operator-fg);
+}
+
+.key--operator:hover {
+  background: var(--operator-bg-hover);
+}
+
+.key--operator:active {
+  background: var(--operator-bg-active);
+}
+
+.key--equals {
+  grid-row: span 2;
+  background: var(--equals-bg);
+  color: #ffffff;
+  font-size: clamp(1.25rem, 5.2vw, 1.5rem);
+  font-weight: 700;
+}
+
+.key--equals:hover {
+  background: var(--equals-bg-hover);
+}
+
+.key--equals:active {
+  background: var(--equals-bg-active);
+}
+
+.key--zero {
+  grid-column: span 2;
+}
