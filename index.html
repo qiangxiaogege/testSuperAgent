@@ -133,6 +133,67 @@
     </form>
     <ul id="todo-list"></ul>
   </main>
-  <script></script>
+  <script>
+    // Data layer: todos are loaded from and saved to localStorage under KEY.
+    const KEY = 'todos';
+    let todos = [];
+    let idCounter = 0;
+
+    function newId() {
+      return String(Date.now()) + '-' + (++idCounter);
+    }
+
+    function load() {
+      try {
+        const raw = localStorage.getItem(KEY);
+        if (raw === null) {
+          return [];
+        }
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function save(todos) {
+      localStorage.setItem(KEY, JSON.stringify(todos));
+    }
+
+    function render() {
+      const list = document.getElementById('todo-list');
+      list.replaceChildren();
+
+      todos.forEach((todo) => {
+        const item = document.createElement('li');
+        item.dataset.id = todo.id;
+        if (todo.done) {
+          item.classList.add('completed');
+        }
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = Boolean(todo.done);
+        checkbox.dataset.id = todo.id;
+        checkbox.setAttribute('aria-label', 'Toggle todo: ' + todo.text);
+
+        const text = document.createElement('span');
+        text.className = 'todo-text';
+        text.textContent = String(todo.text);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'delete';
+        deleteButton.textContent = 'Delete';
+        deleteButton.dataset.id = todo.id;
+
+        item.append(checkbox, text, deleteButton);
+        list.append(item);
+      });
+    }
+
+    todos = load();
+    render();
+  </script>
 </body>
 </html>
