@@ -117,9 +117,28 @@ function equals() {
   render(result);
 }
 
+function backspace() {
+  // While an operator is pending the display still shows the previous operand;
+  // editing it would desynchronise it from the pending calculation.
+  if (state.waitingForOperand && state.operator !== null) {
+    return;
+  }
+  var next = state.current.slice(0, -1);
+  if (next === '' || next === '-') {
+    next = '0';
+  }
+  state.current = next;
+  state.waitingForOperand = false;
+  render(state.current);
+}
+
 function handleKey(key) {
   if (key === 'clear' || key === 'C' || key === 'c') {
     reset();
+    return;
+  }
+  if (key === 'backspace') {
+    backspace();
     return;
   }
   if (key === '=' || key === 'equals') {
@@ -153,6 +172,52 @@ function onButtonClick(event) {
     handleKey(key);
   }
 }
+
+var KEYDOWN_ALIASES = {
+  Enter: 'equals',
+  '=': 'equals',
+  Escape: 'clear',
+  Delete: 'clear',
+  Backspace: 'backspace'
+};
+
+/*
+ * Map a KeyboardEvent.key value to a key accepted by handleKey, or null for
+ * keys the calculator does not use.
+ */
+function keyFromKeyboardEvent(event) {
+  var key = event.key;
+  if (key === 'c' || key === 'C') {
+    return 'clear';
+  }
+  if (Object.prototype.hasOwnProperty.call(KEYDOWN_ALIASES, key)) {
+    return KEYDOWN_ALIASES[key];
+  }
+  if (key.length === 1) {
+    if (key >= '0' && key <= '9') {
+      return key;
+    }
+    if (key === '.' || key === '+' || key === '-' || key === '*' || key === '/') {
+      return key;
+    }
+  }
+  return null;
+}
+
+function onKeydown(event) {
+  // Leave browser and OS shortcuts (copy, paste, select all, ...) alone.
+  if (event.ctrlKey || event.metaKey || event.altKey) {
+    return;
+  }
+  var key = keyFromKeyboardEvent(event);
+  if (key === null) {
+    return;
+  }
+  event.preventDefault();
+  handleKey(key);
+}
+
+window.addEventListener('keydown', onKeydown);
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', bindButtons);
